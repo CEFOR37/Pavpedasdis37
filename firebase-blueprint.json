@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMINISTRATEUR", "FORMATEUR", "OBSERVATEUR"] },
+        "avatar": { "type": "string" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "A construction module",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "phase": { "type": "string" },
+        "priority": { "type": "string" },
+        "budgetMin": { "type": "number" },
+        "budgetMax": { "type": "number" },
+        "surface": { "type": "number" },
+        "deadline": { "type": "string" },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "scenarios": { "type": "array", "items": { "type": "string" } },
+        "regulations": { "type": "array", "items": { "type": "string" } },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "shape": { "type": "object" },
+        "constitution": { "type": "object" },
+        "estimatedBudget": { "type": "number" },
+        "budgetBreakdown": { "type": "array" }
+      },
+      "required": ["name", "description", "status", "phase", "priority", "budgetMin", "budgetMax", "surface", "deadline", "risks", "scenarios", "regulations", "x", "y", "shape"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A task associated with the project",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "assigneeId": { "type": "string" },
+        "startDate": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "priority": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["title", "description", "startDate", "dueDate", "priority", "status"]
+    },
+    "AppDocument": {
+      "title": "Document",
+      "description": "A document uploaded to the GED",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "url": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "uploadDate": { "type": "string" },
+        "size": { "type": "number" },
+        "folderId": { "type": "string" }
+      },
+      "required": ["name", "type", "url", "uploadDate", "size"]
+    },
+    "AppMessage": {
+      "title": "Message",
+      "description": "A discussion message",
+      "type": "object",
+      "properties": {
+        "channelId": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["channelId", "authorId", "authorName", "content", "timestamp"]
+    },
+    "Poll": {
+      "title": "Poll",
+      "description": "A poll in the discussions",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "options": { "type": "array" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["question", "options", "authorId", "authorName", "createdAt", "status"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "modules/{moduleId}": {
+      "schema": { "$ref": "#/entities/Module" },
+      "description": "Modules"
+    },
+    "tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Tasks"
+    },
+    "documents/{documentId}": {
+      "schema": { "$ref": "#/entities/AppDocument" },
+      "description": "Documents"
+    },
+    "messages/{messageId}": {
+      "schema": { "$ref": "#/entities/AppMessage" },
+      "description": "Messages"
+    },
+    "polls/{pollId}": {
+      "schema": { "$ref": "#/entities/Poll" },
+      "description": "Polls"
+    }
+  }
+}

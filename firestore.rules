@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isRegistered() { return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function userRole() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role; }
+    function isAdmin() { return isRegistered() && userRole() == 'ADMIN'; }
+    function isChefProjet() { return isRegistered() && userRole() == 'CHEF_PROJET'; }
+    function isFormateur() { return isRegistered() && userRole() == 'FORMATEUR'; }
+    function isObservateur() { return isRegistered() && userRole() == 'OBSERVATEUR'; }
+    function isPrestataire() { return isRegistered() && userRole() == 'PRESTATAIRE'; }
+    function canManageProject() { return isAdmin() || isChefProjet(); }
+    function canParticipate() { return isAdmin() || isChefProjet() || isFormateur() || isPrestataire(); }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if isAdmin() || isChefProjet();
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && incoming().role == 'OBSERVATEUR';
+      allow update: if isAdmin()
+        || (isSignedIn()
+          && request.auth.uid == userId
+          && !incoming().diff(existing()).affectedKeys().hasAny(['role']));
+      allow delete: if isAdmin();
+    }
+
+    match /modules/{moduleId} {
+      allow read: if isRegistered();
+      allow create: if canManageProject();
+      allow update: if canManageProject() || (isFormateur() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'budgetEstimation']));
+      allow delete: if canManageProject();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isRegistered();
+      allow create: if canParticipate();
+      allow update: if canParticipate();
+      allow delete: if canManageProject();
+    }
+
+    match /documents/{documentId} {
+      allow read: if isRegistered();
+      allow create: if canParticipate();
+      allow update: if canParticipate();
+      allow delete: if canManageProject();
+    }
+
+    match /messages/{messageId} {
+      allow read: if isRegistered();
+      allow create: if canParticipate();
+      allow update: if false;
+      allow delete: if canManageProject() || request.auth.uid == existing().authorId;
+    }
+
+    match /polls/{pollId} {
+      allow read: if isRegistered();
+      allow create: if canParticipate();
+      allow update: if canParticipate();
+      allow delete: if canManageProject();
+    }
+  }
+}
+
